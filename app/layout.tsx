@@ -19,7 +19,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <GlobalHeader />
         {children}
-        <GlobalFooter />
+        {/* <GlobalFooter /> */}
       </body>
     </html>
   );
