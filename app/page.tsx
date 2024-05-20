@@ -1,11 +1,46 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import { draftMode } from "next/headers";
+import type { PageQuery } from "@/gql/graphql";
+import { getPage } from "@/queries/getPage";
+import ComponentRenderer from "@/components/ComponentRenderer";
 
-export default function Home() {
+export async function generateMetadata(): Promise<Metadata> {
+  const { isEnabled } = draftMode();
+
+  const { page }: PageQuery = await getPage(
+    "home" as string,
+    isEnabled ? "DRAFT" : "PUBLISHED"
+  );
+
+  return {
+    title: isEnabled ? `⚡️ ${page?.title}` : page?.title || "",
+    description: page?.description || "",
+    openGraph: {
+      type: "website",
+      title: page?.title || "",
+      images: [page?.ogImage?.url || ""],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: page?.title || "",
+      description: page?.description || "",
+    },
+  };
+}
+
+export default async function Home() {
+  const { isEnabled } = draftMode();
+
+  const { page }: PageQuery = await getPage(
+    "home",
+    isEnabled ? "DRAFT" : "PUBLISHED"
+  );
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <h1 style={{fontSize: "3em"}}>Coming Soon</h1>
-      </div>
+    <main className="max-w-screen-2xl mx-auto">
+      <section className="mb-12">
+        <ComponentRenderer data={page?.components} />
+      </section>
     </main>
   );
 }
